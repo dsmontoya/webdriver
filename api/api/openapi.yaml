@@ -1,0 +1,5677 @@
+openapi: 3.0.3
+info:
+  contact:
+    email: support@aerokube.com
+  description: "[Selenium WebDriver](https://www.w3.org/TR/webdriver) API specification"
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  title: Selenium WebDriver
+  version: 1.0.0
+servers:
+- description: Selenium WebDriver API
+  url: "{protocol}://{host}:{port}{path}"
+  variables:
+    protocol:
+      default: http
+      enum:
+      - http
+      - https
+    host:
+      default: localhost
+      description: Selenium host name
+    port:
+      default: "4444"
+      description: Selenium port number
+      enum:
+      - "4444"
+      - "4445"
+    path:
+      default: /wd/hub
+      description: Selenium API base path
+      enum:
+      - /wd/hub
+      - /
+tags:
+- description: "Commands to start, stop a session and adjust its settings"
+  name: sessions
+- description: "Commands to start, stop a session and adjust its settings"
+  name: timeouts
+- description: Navigation commands
+  name: navigation
+- description: Command contexts
+  name: contexts
+- description: Commands to work with page elements
+  name: elements
+- description: Document handling commands like getting page source
+  name: document
+- description: Commands to work with cookies
+  name: cookies
+- description: "Actions like clicking on the buttons, moving the mouse and so on"
+  name: actions
+- description: Commands to work with alerts
+  name: prompts
+- description: Printing commands
+  name: print
+- description: Commands to take screenshots
+  name: screenshots
+- description: Commands specific to Mozilla Firefox
+  name: mozilla
+- description: Commands specific to Selenoid and Moon
+  name: aerokube
+paths:
+  /status:
+    get:
+      operationId: getStatus
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+          description: successful operation
+      summary: Gets Selenium API status information
+      tags:
+      - sessions
+  /session:
+    post:
+      operationId: createSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewSessionRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewSessionResponse'
+          description: successful operation
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid username or password
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: session not created
+      security:
+      - BasicAuth: []
+      summary: Creates new Selenium session
+      tags:
+      - sessions
+  /session/{sessionId}:
+    delete:
+      operationId: deleteSession
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id
+      summary: Deletes existing Selenium session
+      tags:
+      - sessions
+  /session/{sessionId}/timeouts:
+    get:
+      operationId: getTimeouts
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeoutsResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id
+      summary: Get session timeouts
+      tags:
+      - timeouts
+    post:
+      operationId: setTimeouts
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Timeouts'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id
+      summary: Adjusts session timeouts
+      tags:
+      - timeouts
+  /session/{sessionId}/url:
+    get:
+      operationId: getCurrentUrl
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Returns current URL
+      tags:
+      - navigation
+    post:
+      operationId: navigateTo
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UrlRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: insecure certificate
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open or timeout
+      summary: Navigates to URL
+      tags:
+      - navigation
+  /session/{sessionId}/back:
+    post:
+      operationId: navigateBack
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open or timeout
+      summary: Navigates to the previous page
+      tags:
+      - navigation
+  /session/{sessionId}/forward:
+    post:
+      operationId: navigateForward
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open or timeout
+      summary: Navigates to the next page
+      tags:
+      - navigation
+  /session/{sessionId}/refresh:
+    post:
+      operationId: refreshPage
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open or timeout
+      summary: Reloads current page
+      tags:
+      - navigation
+  /session/{sessionId}/title:
+    get:
+      operationId: getPageTitle
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Returns current page title
+      tags:
+      - navigation
+  /session/{sessionId}/window:
+    delete:
+      operationId: closeWindow
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWindowHandlesResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Closes current window
+      tags:
+      - contexts
+    get:
+      operationId: getWindowHandle
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Returns current window handle
+      tags:
+      - contexts
+    post:
+      operationId: switchToWindow
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchToWindowRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Switches to window
+      tags:
+      - contexts
+  /session/{sessionId}/window/handles:
+    get:
+      operationId: getWindowHandles
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWindowHandlesResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Returns all window handles
+      tags:
+      - contexts
+  /session/{sessionId}/window/new:
+    post:
+      operationId: createNewWindow
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewWindowRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewWindowResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open or unsupported operation
+      summary: Creates a new window or tab
+      tags:
+      - contexts
+  /session/{sessionId}/frame:
+    post:
+      operationId: switchToFrame
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchToFrameRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such frame
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Switch to frame
+      tags:
+      - contexts
+  /session/{sessionId}/frame/parent:
+    post:
+      operationId: switchToParentFrame
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Switch to parent frame
+      tags:
+      - contexts
+  /session/{sessionId}/window/rect:
+    get:
+      operationId: getWindowRect
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RectResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open or unsupported operation
+      summary: Get window size
+      tags:
+      - contexts
+    post:
+      operationId: setWindowRect
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rect'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rect'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open
+      summary: Set window rect
+      tags:
+      - contexts
+  /session/{sessionId}/window/maximize:
+    post:
+      operationId: maximizeWindow
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rect'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open
+      summary: Maximize window
+      tags:
+      - contexts
+  /session/{sessionId}/window/minimize:
+    post:
+      operationId: minimizeWindow
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rect'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open
+      summary: Minimize window
+      tags:
+      - contexts
+  /session/{sessionId}/window/fullscreen:
+    post:
+      operationId: fullscreenWindow
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rect'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open
+      summary: Fullscreen window
+      tags:
+      - contexts
+  /session/{sessionId}/element:
+    post:
+      operationId: findElement
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindElementRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindElementResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument or invalid selector
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Find element
+      tags:
+      - elements
+  /session/{sessionId}/elements:
+    post:
+      operationId: findElements
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindElementRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindElementsResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument or invalid selector
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Find elements
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/element:
+    post:
+      operationId: findElementFromElement
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindElementRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindElementResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument or invalid selector
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Find element from element
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/elements:
+    post:
+      operationId: findElementsFromElement
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindElementRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindElementsResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument or invalid selector
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Find elements from element
+      tags:
+      - elements
+  /session/{sessionId}/element/active:
+    get:
+      operationId: getActiveElement
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindElementResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Get active element
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/selected:
+    get:
+      operationId: isElementSelected
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BooleanResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Is element selected
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/attribute/{name}:
+    get:
+      operationId: getElementAttribute
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested attribute name
+        explode: false
+        in: path
+        name: name
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NullableStringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Get element attribute
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/property/{name}:
+    get:
+      operationId: getElementProperty
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested property name
+        explode: false
+        in: path
+        name: name
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NullableStringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Get element property
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/css/{propertyName}:
+    get:
+      operationId: getElementCSSProperty
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested CSS property name
+        explode: false
+        in: path
+        name: propertyName
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Get element CSS property
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/text:
+    get:
+      operationId: getElementText
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Get element text
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/name:
+    get:
+      operationId: getElementTagName
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Get element tag name
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/rect:
+    get:
+      operationId: getElementRect
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RectResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Get element rect
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/enabled:
+    get:
+      operationId: isElementEnabled
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BooleanResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Is element enabled
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/displayed:
+    get:
+      description: This operation is not considered a part of specification but is
+        de-facto present in existing implementations.
+      operationId: isElementDisplayed
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BooleanResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Is element displayed
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/computedrole:
+    get:
+      operationId: getElementComputedRole
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Get element computed accessibility role
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/computedlabel:
+    get:
+      operationId: getElementComputedLabel
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Get element computed accessibility label
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/click:
+    post:
+      operationId: elementClick
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument or element not interactable or element click
+            intercepted
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Click on element
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/clear:
+    post:
+      operationId: elementClear
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument or element not interactable or invalid element
+            state
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Clear element
+      tags:
+      - elements
+  /session/{sessionId}/element/{elementId}/value:
+    post:
+      operationId: elementSendKeys
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ElementSendKeysRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument or element not interactable
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such element
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Send keys to element
+      tags:
+      - elements
+  /session/{sessionId}/source:
+    get:
+      operationId: getPageSource
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open
+      summary: Get page source
+      tags:
+      - document
+  /session/{sessionId}/execute/sync:
+    post:
+      operationId: executeScript
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScriptRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open or script timeout
+            or javascript error
+      summary: Execute script
+      tags:
+      - document
+  /session/{sessionId}/execute/async:
+    post:
+      operationId: executeScriptAsync
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScriptRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open or script timeout
+            or javascript error
+      summary: Execute script asynchronously
+      tags:
+      - document
+  /session/{sessionId}/file:
+    post:
+      operationId: uploadFile
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileUploadRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open
+      summary: Upload file
+      tags:
+      - document
+  /session/{sessionId}/cookie:
+    delete:
+      operationId: deleteAllCookies
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open
+      summary: Delete all cookies
+      tags:
+      - cookies
+    get:
+      operationId: getAllCookies
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookiesResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open
+      summary: Get all cookies
+      tags:
+      - cookies
+    post:
+      operationId: addCookie
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CookieRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument or invalid cookie domain
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open or unable to
+            set cookie
+      summary: Add cookie
+      tags:
+      - cookies
+  /session/{sessionId}/cookie/{name}:
+    delete:
+      operationId: deleteCookie
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Cookie name
+        explode: false
+        in: path
+        name: name
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open
+      summary: Delete cookie
+      tags:
+      - cookies
+    get:
+      operationId: getNamedCookie
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Cookie name
+        explode: false
+        in: path
+        name: name
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookieResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such cookie
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open
+      summary: Get named cookie
+      tags:
+      - cookies
+  /session/{sessionId}/actions:
+    delete:
+      operationId: releaseActions
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Release actions
+      tags:
+      - actions
+    post:
+      operationId: performActions
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionsRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unexpected alert open
+      summary: Perform actions
+      tags:
+      - actions
+  /session/{sessionId}/alert/dismiss:
+    post:
+      operationId: dismissAlert
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such alert
+      summary: Dismiss alert
+      tags:
+      - prompts
+  /session/{sessionId}/alert/accept:
+    post:
+      operationId: acceptAlert
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmptyRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such alert
+      summary: Accept alert
+      tags:
+      - prompts
+  /session/{sessionId}/alert/text:
+    get:
+      operationId: getAlertText
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument or element not interactable
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such alert
+      summary: Get alert text
+      tags:
+      - prompts
+    post:
+      operationId: sendAlertText
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendAlertTextRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument or element not interactable
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window or no such alert
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation
+      summary: Send alert text
+      tags:
+      - prompts
+  /session/{sessionId}/screenshot:
+    get:
+      operationId: takeScreenshot
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open or unable to
+            capture screen
+      summary: Takes page screenshot
+      tags:
+      - screenshots
+  /session/{sessionId}/element/{elementId}/screenshot:
+    get:
+      operationId: takeElementScreenshot
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Selenium element ID
+        explode: false
+        in: path
+        name: elementId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open or unable to
+            capture screen
+      summary: Takes element screenshot
+      tags:
+      - screenshots
+  /session/{sessionId}/print:
+    post:
+      operationId: printPage
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrintRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation
+      summary: Print page to PDF
+      tags:
+      - print
+  /session/{sessionId}/moz/context:
+    get:
+      operationId: getContext
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unknown error
+      summary: Get current context
+      tags:
+      - mozilla
+    post:
+      operationId: setContext
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContextRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unknown error
+      summary: Set current context
+      tags:
+      - mozilla
+  /session/{sessionId}/moz/addon/install:
+    post:
+      operationId: installAddon
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddonInstallRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unknown error
+      summary: Install addon
+      tags:
+      - mozilla
+  /session/{sessionId}/moz/addon/uninstall:
+    post:
+      operationId: uninstallAddon
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddonUninstallRequest'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyResponse'
+          description: successful operation
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid argument
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unknown error
+      summary: Uninstall addon
+      tags:
+      - mozilla
+  /session/{sessionId}/moz/screenshot/full:
+    get:
+      operationId: takeFullScreenshot
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StringResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or no such window
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: unsupported operation or unexpected alert open or unable to
+            capture screen
+      summary: Takes full page screenshot
+      tags:
+      - mozilla
+  /session/{sessionId}/aerokube/download/{fileName}:
+    delete:
+      operationId: deleteRemoteFile
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested file name
+        explode: false
+        in: path
+        name: fileName
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or file not found
+      summary: Deletes file in remote container with browser
+      tags:
+      - aerokube
+    get:
+      operationId: downloadRemoteFile
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Requested file name
+        explode: false
+        in: path
+        name: fileName
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/octet-stream:
+              schema:
+                format: binary
+                type: string
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id or file not found
+      summary: Downloads file from remote container with browser
+      tags:
+      - aerokube
+  /session/{sessionId}/aerokube/download:
+    get:
+      operationId: listRemoteFiles
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Information is returned in JSON format
+        explode: true
+        in: query
+        name: json
+        required: true
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArrayResponse'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id
+      summary: Lists files in remote container with browser
+      tags:
+      - aerokube
+  /session/{sessionId}/aerokube/clipboard:
+    get:
+      operationId: getClipboard
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClipboardData'
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id
+      summary: Returns clipboard contents
+      tags:
+      - aerokube
+    post:
+      operationId: updateClipboard
+      parameters:
+      - description: Requested session ID
+        explode: false
+        in: path
+        name: sessionId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClipboardData'
+        required: true
+      responses:
+        "200":
+          description: successful operation
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: invalid session id
+      summary: Updates clipboard contents
+      tags:
+      - aerokube
+components:
+  schemas:
+    StatusResponse:
+      example:
+        value:
+          ready: true
+          message: message
+      properties:
+        value:
+          $ref: '#/components/schemas/StatusResponse_value'
+      required:
+      - value
+      type: object
+    EmptyResponse:
+      example:
+        value: value
+      properties:
+        value:
+          description: Always null value
+          nullable: true
+          type: string
+      type: object
+    StringResponse:
+      example:
+        value: value
+      properties:
+        value:
+          type: string
+      required:
+      - value
+      type: object
+    NullableStringResponse:
+      example:
+        value: value
+      properties:
+        value:
+          description: String that can sometimes have null value
+          nullable: true
+          type: string
+      type: object
+    BooleanResponse:
+      example:
+        value: true
+      properties:
+        value:
+          type: boolean
+      required:
+      - value
+      type: object
+    ArrayResponse:
+      example:
+        value:
+        - value
+        - value
+      properties:
+        value:
+          items:
+            type: string
+          type: array
+      required:
+      - value
+      type: object
+    ErrorCode:
+      enum:
+      - element click intercepted
+      - element not interactable
+      - insecure certificate
+      - invalid argument
+      - invalid cookie domain
+      - invalid element state
+      - invalid selector
+      - invalid session id
+      - javascript error
+      - move target out of bounds
+      - no such alert
+      - no such cookie
+      - no such element
+      - no such frame
+      - no such window
+      - script timeout
+      - session not created
+      - stale element reference
+      - timeout
+      - unable to set cookie
+      - unable to capture screen
+      - unexpected alert open
+      - unknown command
+      - unknown error
+      - unknown method
+      - unsupported operation
+      type: string
+    ErrorResponse:
+      properties:
+        value:
+          $ref: '#/components/schemas/ErrorResponse_value'
+      required:
+      - value
+      type: object
+    Proxy:
+      example:
+        proxyAutoconfigUrl: proxyAutoconfigUrl
+        httpProxy: httpProxy
+        socksVersion: 20
+        proxyType: pac
+        noProxy:
+        - noProxy
+        - noProxy
+        ftpProxy: ftpProxy
+        socksProxy: socksProxy
+        sslProxy: sslProxy
+      properties:
+        proxyType:
+          enum:
+          - pac
+          - direct
+          - autodetect
+          - system
+          - manual
+          type: string
+        proxyAutoconfigUrl:
+          type: string
+        ftpProxy:
+          type: string
+        httpProxy:
+          type: string
+        noProxy:
+          items:
+            type: string
+          type: array
+        sslProxy:
+          type: string
+        socksProxy:
+          type: string
+        socksVersion:
+          maximum: 255
+          minimum: 0
+          type: integer
+      required:
+      - proxyType
+      type: object
+    Capabilities:
+      additionalProperties:
+        type: object
+      example:
+        timeouts:
+          implicit: 5
+          pageLoad: 1
+          script: 6
+        pageLoadStrategy: none
+        unhandledPromptBehavior: dismiss
+        strictFileInteractability: true
+        moz:firefoxOptions:
+          args:
+          - args
+          - args
+          androidDeviceSerial: androidDeviceSerial
+          log:
+            level: trace
+          binary: binary
+          profile: profile
+          androidPackage: androidPackage
+          androidIntentArguments:
+          - androidIntentArguments
+          - androidIntentArguments
+          androidActivity: androidActivity
+          env:
+            key: env
+          prefs:
+            key: null
+        proxy:
+          proxyAutoconfigUrl: proxyAutoconfigUrl
+          httpProxy: httpProxy
+          socksVersion: 20
+          proxyType: pac
+          noProxy:
+          - noProxy
+          - noProxy
+          ftpProxy: ftpProxy
+          socksProxy: socksProxy
+          sslProxy: sslProxy
+        moon:options:
+          hosts:
+          - hosts
+          - hosts
+          additionalFonts: true
+          pattern: pattern
+          enableVideo: true
+          env:
+          - env
+          - env
+          videoFrameRate: 3
+          labels:
+            key: labels
+          videoScreenSize: videoScreenSize
+          nameservers:
+          - nameservers
+          - nameservers
+          logLevel: null
+          videoName: videoName
+          context: context
+          mobileDevice:
+            orientation: portrait
+            deviceName: deviceName
+          name: name
+          sessionTimeout: sessionTimeout
+          screenResolution: screenResolution
+        operaOptions:
+          args:
+          - args
+          - args
+          extensions:
+          - extensions
+          - extensions
+          binary: binary
+        goog:loggingPrefs:
+          server: null
+          performance: null
+          driver: null
+          browser: null
+          client: null
+          profiler: null
+        safari:automaticProfiling: true
+        goog:chromeOptions:
+          args:
+          - args
+          - args
+          mobileEmulation:
+            deviceMetrics:
+              pixelRatio: 0.8061401
+              width: 0
+              touch: true
+              height: 0
+            userAgent: userAgent
+            deviceName: deviceName
+          windowTypes:
+          - windowTypes
+          - windowTypes
+          extensions:
+          - extensions
+          - extensions
+          excludeSwitches:
+          - excludeSwitches
+          - excludeSwitches
+          perfLoggingPrefs:
+            enableNetwork: true
+            enablePage: true
+            bufferUsageReportingInterval: 9
+            traceCategories: traceCategories
+          debuggerAddress: debuggerAddress
+          binary: binary
+          detach: true
+          localState:
+            key: null
+          minidumpPath: minidumpPath
+          prefs:
+          - null
+          - null
+        selenoid:options:
+          enableVideo: true
+          timeZone: timeZone
+          env:
+          - env
+          - env
+          videoFrameRate: 2
+          labels:
+            key: labels
+          enableVNC: true
+          s3KeyPattern: s3KeyPattern
+          videoScreenSize: videoScreenSize
+          logName: logName
+          videoName: videoName
+          enableLog: true
+          name: name
+          sessionTimeout: sessionTimeout
+          screenResolution: screenResolution
+        browserVersion: browserVersion
+        acceptInsecureCerts: true
+        browserName: browserName
+        safari:automaticInspection: true
+        platformName: platformName
+        setWindowRect: true
+        ms:edgeOptions:
+          args:
+          - args
+          - args
+          extensions:
+          - extensions
+          - extensions
+          binary: binary
+      properties:
+        browserName:
+          type: string
+        browserVersion:
+          type: string
+        platformName:
+          type: string
+        acceptInsecureCerts:
+          type: boolean
+        pageLoadStrategy:
+          enum:
+          - none
+          - eager
+          - normal
+          type: string
+        proxy:
+          $ref: '#/components/schemas/Proxy'
+        setWindowRect:
+          type: boolean
+        timeouts:
+          $ref: '#/components/schemas/Timeouts'
+        strictFileInteractability:
+          type: boolean
+        unhandledPromptBehavior:
+          enum:
+          - dismiss
+          - accept
+          - dismiss and notify
+          - accept and notify
+          - ignore
+          type: string
+        goog:loggingPrefs:
+          $ref: '#/components/schemas/LoggingPrefs'
+        goog:chromeOptions:
+          $ref: '#/components/schemas/ChromeOptions'
+        moon:options:
+          $ref: '#/components/schemas/MoonOptions'
+        moz:firefoxOptions:
+          $ref: '#/components/schemas/FirefoxOptions'
+        ms:edgeOptions:
+          $ref: '#/components/schemas/EdgeOptions'
+        operaOptions:
+          $ref: '#/components/schemas/EdgeOptions'
+        selenoid:options:
+          $ref: '#/components/schemas/SelenoidOptions'
+        safari:automaticInspection:
+          type: boolean
+        safari:automaticProfiling:
+          type: boolean
+      type: object
+    PreferenceValue:
+      oneOf:
+      - type: boolean
+      - type: integer
+      - type: string
+    FirefoxOptions:
+      example:
+        args:
+        - args
+        - args
+        androidDeviceSerial: androidDeviceSerial
+        log:
+          level: trace
+        binary: binary
+        profile: profile
+        androidPackage: androidPackage
+        androidIntentArguments:
+        - androidIntentArguments
+        - androidIntentArguments
+        androidActivity: androidActivity
+        env:
+          key: env
+        prefs:
+          key: null
+      properties:
+        androidPackage:
+          type: string
+        androidActivity:
+          type: string
+        androidDeviceSerial:
+          type: string
+        androidIntentArguments:
+          items:
+            type: string
+          type: array
+        args:
+          items:
+            type: string
+          type: array
+        binary:
+          type: string
+        env:
+          additionalProperties:
+            type: string
+          type: object
+        log:
+          $ref: '#/components/schemas/FirefoxOptions_log'
+        prefs:
+          additionalProperties:
+            $ref: '#/components/schemas/PreferenceValue'
+          type: object
+        profile:
+          type: string
+      type: object
+    AddonInstallRequest:
+      example:
+        temporary: true
+        addon: addon
+      properties:
+        addon:
+          type: string
+        temporary:
+          default: true
+          description: temporarily installed extension will be removed at the end
+            of browser session
+          type: boolean
+      required:
+      - addon
+      type: object
+    AddonUninstallRequest:
+      example:
+        id: id
+      properties:
+        id:
+          type: string
+      required:
+      - id
+      type: object
+    FirefoxContext:
+      enum:
+      - content
+      - chrome
+      type: string
+    ContextRequest:
+      example:
+        context: null
+      properties:
+        context:
+          $ref: '#/components/schemas/FirefoxContext'
+      required:
+      - context
+      type: object
+    MobileEmulation:
+      example:
+        deviceMetrics:
+          pixelRatio: 0.8061401
+          width: 0
+          touch: true
+          height: 0
+        userAgent: userAgent
+        deviceName: deviceName
+      properties:
+        deviceName:
+          type: string
+        deviceMetrics:
+          $ref: '#/components/schemas/MobileEmulation_deviceMetrics'
+        userAgent:
+          type: string
+      type: object
+    LogType:
+      enum:
+      - browser
+      - client
+      - driver
+      - performance
+      - profiler
+      - server
+      type: string
+    LogLevel:
+      enum:
+      - "OFF"
+      - SEVERE
+      - WARNING
+      - INFO
+      - CONFIG
+      - FINE
+      - FINER
+      - FINEST
+      - ALL
+      type: string
+    LoggingPrefs:
+      example:
+        server: null
+        performance: null
+        driver: null
+        browser: null
+        client: null
+        profiler: null
+      properties:
+        browser:
+          $ref: '#/components/schemas/LogLevel'
+        client:
+          $ref: '#/components/schemas/LogLevel'
+        driver:
+          $ref: '#/components/schemas/LogLevel'
+        performance:
+          $ref: '#/components/schemas/LogLevel'
+        profiler:
+          $ref: '#/components/schemas/LogLevel'
+        server:
+          $ref: '#/components/schemas/LogLevel'
+      type: object
+    PerfLoggingPrefs:
+      example:
+        enableNetwork: true
+        enablePage: true
+        bufferUsageReportingInterval: 9
+        traceCategories: traceCategories
+      properties:
+        enableNetwork:
+          default: true
+          type: boolean
+        enablePage:
+          default: true
+          type: boolean
+        traceCategories:
+          type: string
+        bufferUsageReportingInterval:
+          default: 1000
+          format: int64
+          type: integer
+      type: object
+    ChromeOptions:
+      example:
+        args:
+        - args
+        - args
+        mobileEmulation:
+          deviceMetrics:
+            pixelRatio: 0.8061401
+            width: 0
+            touch: true
+            height: 0
+          userAgent: userAgent
+          deviceName: deviceName
+        windowTypes:
+        - windowTypes
+        - windowTypes
+        extensions:
+        - extensions
+        - extensions
+        excludeSwitches:
+        - excludeSwitches
+        - excludeSwitches
+        perfLoggingPrefs:
+          enableNetwork: true
+          enablePage: true
+          bufferUsageReportingInterval: 9
+          traceCategories: traceCategories
+        debuggerAddress: debuggerAddress
+        binary: binary
+        detach: true
+        localState:
+          key: null
+        minidumpPath: minidumpPath
+        prefs:
+        - null
+        - null
+      properties:
+        args:
+          items:
+            type: string
+          type: array
+        binary:
+          type: string
+        debuggerAddress:
+          type: string
+        detach:
+          type: boolean
+        excludeSwitches:
+          items:
+            type: string
+          type: array
+        extensions:
+          items:
+            type: string
+          type: array
+        localState:
+          additionalProperties:
+            $ref: '#/components/schemas/PreferenceValue'
+          type: object
+        minidumpPath:
+          type: string
+        mobileEmulation:
+          $ref: '#/components/schemas/MobileEmulation'
+        perfLoggingPrefs:
+          $ref: '#/components/schemas/PerfLoggingPrefs'
+        prefs:
+          items:
+            $ref: '#/components/schemas/PreferenceValue'
+          type: array
+        windowTypes:
+          items:
+            type: string
+          type: array
+      type: object
+    OperaOptions:
+      properties:
+        args:
+          items:
+            type: string
+          type: array
+        binary:
+          type: string
+        extensions:
+          items:
+            type: string
+          type: array
+      type: object
+    EdgeOptions:
+      example:
+        args:
+        - args
+        - args
+        extensions:
+        - extensions
+        - extensions
+        binary: binary
+      properties:
+        args:
+          items:
+            type: string
+          type: array
+        binary:
+          type: string
+        extensions:
+          items:
+            type: string
+          type: array
+      type: object
+    SelenoidOptions:
+      example:
+        enableVideo: true
+        timeZone: timeZone
+        env:
+        - env
+        - env
+        videoFrameRate: 2
+        labels:
+          key: labels
+        enableVNC: true
+        s3KeyPattern: s3KeyPattern
+        videoScreenSize: videoScreenSize
+        logName: logName
+        videoName: videoName
+        enableLog: true
+        name: name
+        sessionTimeout: sessionTimeout
+        screenResolution: screenResolution
+      properties:
+        enableLog:
+          type: boolean
+        enableVideo:
+          type: boolean
+        enableVNC:
+          type: boolean
+        env:
+          items:
+            type: string
+          type: array
+        labels:
+          additionalProperties:
+            type: string
+          description: Custom container labels
+          type: object
+        logName:
+          type: string
+        name:
+          type: string
+        s3KeyPattern:
+          type: string
+        sessionTimeout:
+          type: string
+        screenResolution:
+          description: Screen resolution in format 1920x1080x32 or 1920x1080
+          type: string
+        timeZone:
+          description: Time zone value like Europe/Moscow
+          type: string
+        videoFrameRate:
+          format: int64
+          type: integer
+        videoName:
+          type: string
+        videoScreenSize:
+          description: Video screen size in format 1920x1080
+          type: string
+      type: object
+    MoonMobileDevice:
+      example:
+        orientation: portrait
+        deviceName: deviceName
+      properties:
+        deviceName:
+          type: string
+        orientation:
+          default: portrait
+          enum:
+          - portrait
+          - landscape
+          type: string
+      required:
+      - deviceName
+      type: object
+    ChromiumLogLevel:
+      enum:
+      - "OFF"
+      - SEVERE
+      - WARNING
+      - INFO
+      - DEBUG
+      - ALL
+      type: string
+    FirefoxLogLevel:
+      enum:
+      - fatal
+      - error
+      - warn
+      - info
+      - config
+      - debug
+      - trace
+      type: string
+    MoonLogLevel:
+      description: Browser log level
+      externalDocs:
+        url: https://aerokube.com/moon/latest/#capability-log-level
+      oneOf:
+      - $ref: '#/components/schemas/FirefoxLogLevel'
+      - $ref: '#/components/schemas/ChromiumLogLevel'
+    MoonOptions:
+      example:
+        hosts:
+        - hosts
+        - hosts
+        additionalFonts: true
+        pattern: pattern
+        enableVideo: true
+        env:
+        - env
+        - env
+        videoFrameRate: 3
+        labels:
+          key: labels
+        videoScreenSize: videoScreenSize
+        nameservers:
+        - nameservers
+        - nameservers
+        logLevel: null
+        videoName: videoName
+        context: context
+        mobileDevice:
+          orientation: portrait
+          deviceName: deviceName
+        name: name
+        sessionTimeout: sessionTimeout
+        screenResolution: screenResolution
+      properties:
+        additionalFonts:
+          description: "Enable additional regional fonts (Chinese, Japanese, Thai\
+            \ and so on)"
+          externalDocs:
+            url: https://aerokube.com/moon/latest/#capability-additional-fonts
+          type: boolean
+        context:
+          description: Moon context archive URL
+          externalDocs:
+            url: https://aerokube.com/moon/latest/#capability-context
+          type: string
+        enableVideo:
+          type: boolean
+        env:
+          items:
+            type: string
+          type: array
+        hosts:
+          description: Additional /etc/hosts entries
+          items:
+            type: string
+          type: array
+        labels:
+          additionalProperties:
+            type: string
+          description: Custom pod labels
+          type: object
+        logLevel:
+          $ref: '#/components/schemas/MoonLogLevel'
+        mobileDevice:
+          $ref: '#/components/schemas/MoonMobileDevice'
+        name:
+          type: string
+        nameservers:
+          description: Custom DNS servers
+          items:
+            type: string
+          type: array
+        pattern:
+          description: S3 upload pattern
+          type: string
+        sessionTimeout:
+          type: string
+        screenResolution:
+          description: Screen resolution in format 1920x1080x32 or 1920x1080
+          type: string
+        videoFrameRate:
+          format: int64
+          type: integer
+        videoName:
+          type: string
+        videoScreenSize:
+          description: Video screen size in format 1920x1080
+          type: string
+      type: object
+    NewSessionRequest:
+      example:
+        capabilities:
+          firstMatch:
+          - timeouts:
+              implicit: 5
+              pageLoad: 1
+              script: 6
+            pageLoadStrategy: none
+            unhandledPromptBehavior: dismiss
+            strictFileInteractability: true
+            moz:firefoxOptions:
+              args:
+              - args
+              - args
+              androidDeviceSerial: androidDeviceSerial
+              log:
+                level: trace
+              binary: binary
+              profile: profile
+              androidPackage: androidPackage
+              androidIntentArguments:
+              - androidIntentArguments
+              - androidIntentArguments
+              androidActivity: androidActivity
+              env:
+                key: env
+              prefs:
+                key: null
+            proxy:
+              proxyAutoconfigUrl: proxyAutoconfigUrl
+              httpProxy: httpProxy
+              socksVersion: 20
+              proxyType: pac
+              noProxy:
+              - noProxy
+              - noProxy
+              ftpProxy: ftpProxy
+              socksProxy: socksProxy
+              sslProxy: sslProxy
+            moon:options:
+              hosts:
+              - hosts
+              - hosts
+              additionalFonts: true
+              pattern: pattern
+              enableVideo: true
+              env:
+              - env
+              - env
+              videoFrameRate: 3
+              labels:
+                key: labels
+              videoScreenSize: videoScreenSize
+              nameservers:
+              - nameservers
+              - nameservers
+              logLevel: null
+              videoName: videoName
+              context: context
+              mobileDevice:
+                orientation: portrait
+                deviceName: deviceName
+              name: name
+              sessionTimeout: sessionTimeout
+              screenResolution: screenResolution
+            operaOptions:
+              args:
+              - args
+              - args
+              extensions:
+              - extensions
+              - extensions
+              binary: binary
+            goog:loggingPrefs:
+              server: null
+              performance: null
+              driver: null
+              browser: null
+              client: null
+              profiler: null
+            safari:automaticProfiling: true
+            goog:chromeOptions:
+              args:
+              - args
+              - args
+              mobileEmulation:
+                deviceMetrics:
+                  pixelRatio: 0.8061401
+                  width: 0
+                  touch: true
+                  height: 0
+                userAgent: userAgent
+                deviceName: deviceName
+              windowTypes:
+              - windowTypes
+              - windowTypes
+              extensions:
+              - extensions
+              - extensions
+              excludeSwitches:
+              - excludeSwitches
+              - excludeSwitches
+              perfLoggingPrefs:
+                enableNetwork: true
+                enablePage: true
+                bufferUsageReportingInterval: 9
+                traceCategories: traceCategories
+              debuggerAddress: debuggerAddress
+              binary: binary
+              detach: true
+              localState:
+                key: null
+              minidumpPath: minidumpPath
+              prefs:
+              - null
+              - null
+            selenoid:options:
+              enableVideo: true
+              timeZone: timeZone
+              env:
+              - env
+              - env
+              videoFrameRate: 2
+              labels:
+                key: labels
+              enableVNC: true
+              s3KeyPattern: s3KeyPattern
+              videoScreenSize: videoScreenSize
+              logName: logName
+              videoName: videoName
+              enableLog: true
+              name: name
+              sessionTimeout: sessionTimeout
+              screenResolution: screenResolution
+            browserVersion: browserVersion
+            acceptInsecureCerts: true
+            browserName: browserName
+            safari:automaticInspection: true
+            platformName: platformName
+            setWindowRect: true
+            ms:edgeOptions:
+              args:
+              - args
+              - args
+              extensions:
+              - extensions
+              - extensions
+              binary: binary
+          - timeouts:
+              implicit: 5
+              pageLoad: 1
+              script: 6
+            pageLoadStrategy: none
+            unhandledPromptBehavior: dismiss
+            strictFileInteractability: true
+            moz:firefoxOptions:
+              args:
+              - args
+              - args
+              androidDeviceSerial: androidDeviceSerial
+              log:
+                level: trace
+              binary: binary
+              profile: profile
+              androidPackage: androidPackage
+              androidIntentArguments:
+              - androidIntentArguments
+              - androidIntentArguments
+              androidActivity: androidActivity
+              env:
+                key: env
+              prefs:
+                key: null
+            proxy:
+              proxyAutoconfigUrl: proxyAutoconfigUrl
+              httpProxy: httpProxy
+              socksVersion: 20
+              proxyType: pac
+              noProxy:
+              - noProxy
+              - noProxy
+              ftpProxy: ftpProxy
+              socksProxy: socksProxy
+              sslProxy: sslProxy
+            moon:options:
+              hosts:
+              - hosts
+              - hosts
+              additionalFonts: true
+              pattern: pattern
+              enableVideo: true
+              env:
+              - env
+              - env
+              videoFrameRate: 3
+              labels:
+                key: labels
+              videoScreenSize: videoScreenSize
+              nameservers:
+              - nameservers
+              - nameservers
+              logLevel: null
+              videoName: videoName
+              context: context
+              mobileDevice:
+                orientation: portrait
+                deviceName: deviceName
+              name: name
+              sessionTimeout: sessionTimeout
+              screenResolution: screenResolution
+            operaOptions:
+              args:
+              - args
+              - args
+              extensions:
+              - extensions
+              - extensions
+              binary: binary
+            goog:loggingPrefs:
+              server: null
+              performance: null
+              driver: null
+              browser: null
+              client: null
+              profiler: null
+            safari:automaticProfiling: true
+            goog:chromeOptions:
+              args:
+              - args
+              - args
+              mobileEmulation:
+                deviceMetrics:
+                  pixelRatio: 0.8061401
+                  width: 0
+                  touch: true
+                  height: 0
+                userAgent: userAgent
+                deviceName: deviceName
+              windowTypes:
+              - windowTypes
+              - windowTypes
+              extensions:
+              - extensions
+              - extensions
+              excludeSwitches:
+              - excludeSwitches
+              - excludeSwitches
+              perfLoggingPrefs:
+                enableNetwork: true
+                enablePage: true
+                bufferUsageReportingInterval: 9
+                traceCategories: traceCategories
+              debuggerAddress: debuggerAddress
+              binary: binary
+              detach: true
+              localState:
+                key: null
+              minidumpPath: minidumpPath
+              prefs:
+              - null
+              - null
+            selenoid:options:
+              enableVideo: true
+              timeZone: timeZone
+              env:
+              - env
+              - env
+              videoFrameRate: 2
+              labels:
+                key: labels
+              enableVNC: true
+              s3KeyPattern: s3KeyPattern
+              videoScreenSize: videoScreenSize
+              logName: logName
+              videoName: videoName
+              enableLog: true
+              name: name
+              sessionTimeout: sessionTimeout
+              screenResolution: screenResolution
+            browserVersion: browserVersion
+            acceptInsecureCerts: true
+            browserName: browserName
+            safari:automaticInspection: true
+            platformName: platformName
+            setWindowRect: true
+            ms:edgeOptions:
+              args:
+              - args
+              - args
+              extensions:
+              - extensions
+              - extensions
+              binary: binary
+          alwaysMatch:
+            timeouts:
+              implicit: 5
+              pageLoad: 1
+              script: 6
+            pageLoadStrategy: none
+            unhandledPromptBehavior: dismiss
+            strictFileInteractability: true
+            moz:firefoxOptions:
+              args:
+              - args
+              - args
+              androidDeviceSerial: androidDeviceSerial
+              log:
+                level: trace
+              binary: binary
+              profile: profile
+              androidPackage: androidPackage
+              androidIntentArguments:
+              - androidIntentArguments
+              - androidIntentArguments
+              androidActivity: androidActivity
+              env:
+                key: env
+              prefs:
+                key: null
+            proxy:
+              proxyAutoconfigUrl: proxyAutoconfigUrl
+              httpProxy: httpProxy
+              socksVersion: 20
+              proxyType: pac
+              noProxy:
+              - noProxy
+              - noProxy
+              ftpProxy: ftpProxy
+              socksProxy: socksProxy
+              sslProxy: sslProxy
+            moon:options:
+              hosts:
+              - hosts
+              - hosts
+              additionalFonts: true
+              pattern: pattern
+              enableVideo: true
+              env:
+              - env
+              - env
+              videoFrameRate: 3
+              labels:
+                key: labels
+              videoScreenSize: videoScreenSize
+              nameservers:
+              - nameservers
+              - nameservers
+              logLevel: null
+              videoName: videoName
+              context: context
+              mobileDevice:
+                orientation: portrait
+                deviceName: deviceName
+              name: name
+              sessionTimeout: sessionTimeout
+              screenResolution: screenResolution
+            operaOptions:
+              args:
+              - args
+              - args
+              extensions:
+              - extensions
+              - extensions
+              binary: binary
+            goog:loggingPrefs:
+              server: null
+              performance: null
+              driver: null
+              browser: null
+              client: null
+              profiler: null
+            safari:automaticProfiling: true
+            goog:chromeOptions:
+              args:
+              - args
+              - args
+              mobileEmulation:
+                deviceMetrics:
+                  pixelRatio: 0.8061401
+                  width: 0
+                  touch: true
+                  height: 0
+                userAgent: userAgent
+                deviceName: deviceName
+              windowTypes:
+              - windowTypes
+              - windowTypes
+              extensions:
+              - extensions
+              - extensions
+              excludeSwitches:
+              - excludeSwitches
+              - excludeSwitches
+              perfLoggingPrefs:
+                enableNetwork: true
+                enablePage: true
+                bufferUsageReportingInterval: 9
+                traceCategories: traceCategories
+              debuggerAddress: debuggerAddress
+              binary: binary
+              detach: true
+              localState:
+                key: null
+              minidumpPath: minidumpPath
+              prefs:
+              - null
+              - null
+            selenoid:options:
+              enableVideo: true
+              timeZone: timeZone
+              env:
+              - env
+              - env
+              videoFrameRate: 2
+              labels:
+                key: labels
+              enableVNC: true
+              s3KeyPattern: s3KeyPattern
+              videoScreenSize: videoScreenSize
+              logName: logName
+              videoName: videoName
+              enableLog: true
+              name: name
+              sessionTimeout: sessionTimeout
+              screenResolution: screenResolution
+            browserVersion: browserVersion
+            acceptInsecureCerts: true
+            browserName: browserName
+            safari:automaticInspection: true
+            platformName: platformName
+            setWindowRect: true
+            ms:edgeOptions:
+              args:
+              - args
+              - args
+              extensions:
+              - extensions
+              - extensions
+              binary: binary
+      properties:
+        capabilities:
+          $ref: '#/components/schemas/NewSessionRequest_capabilities'
+      required:
+      - capabilities
+      type: object
+    NewSessionResponse:
+      example:
+        value:
+          capabilities:
+            timeouts:
+              implicit: 5
+              pageLoad: 1
+              script: 6
+            pageLoadStrategy: none
+            unhandledPromptBehavior: dismiss
+            strictFileInteractability: true
+            moz:firefoxOptions:
+              args:
+              - args
+              - args
+              androidDeviceSerial: androidDeviceSerial
+              log:
+                level: trace
+              binary: binary
+              profile: profile
+              androidPackage: androidPackage
+              androidIntentArguments:
+              - androidIntentArguments
+              - androidIntentArguments
+              androidActivity: androidActivity
+              env:
+                key: env
+              prefs:
+                key: null
+            proxy:
+              proxyAutoconfigUrl: proxyAutoconfigUrl
+              httpProxy: httpProxy
+              socksVersion: 20
+              proxyType: pac
+              noProxy:
+              - noProxy
+              - noProxy
+              ftpProxy: ftpProxy
+              socksProxy: socksProxy
+              sslProxy: sslProxy
+            moon:options:
+              hosts:
+              - hosts
+              - hosts
+              additionalFonts: true
+              pattern: pattern
+              enableVideo: true
+              env:
+              - env
+              - env
+              videoFrameRate: 3
+              labels:
+                key: labels
+              videoScreenSize: videoScreenSize
+              nameservers:
+              - nameservers
+              - nameservers
+              logLevel: null
+              videoName: videoName
+              context: context
+              mobileDevice:
+                orientation: portrait
+                deviceName: deviceName
+              name: name
+              sessionTimeout: sessionTimeout
+              screenResolution: screenResolution
+            operaOptions:
+              args:
+              - args
+              - args
+              extensions:
+              - extensions
+              - extensions
+              binary: binary
+            goog:loggingPrefs:
+              server: null
+              performance: null
+              driver: null
+              browser: null
+              client: null
+              profiler: null
+            safari:automaticProfiling: true
+            goog:chromeOptions:
+              args:
+              - args
+              - args
+              mobileEmulation:
+                deviceMetrics:
+                  pixelRatio: 0.8061401
+                  width: 0
+                  touch: true
+                  height: 0
+                userAgent: userAgent
+                deviceName: deviceName
+              windowTypes:
+              - windowTypes
+              - windowTypes
+              extensions:
+              - extensions
+              - extensions
+              excludeSwitches:
+              - excludeSwitches
+              - excludeSwitches
+              perfLoggingPrefs:
+                enableNetwork: true
+                enablePage: true
+                bufferUsageReportingInterval: 9
+                traceCategories: traceCategories
+              debuggerAddress: debuggerAddress
+              binary: binary
+              detach: true
+              localState:
+                key: null
+              minidumpPath: minidumpPath
+              prefs:
+              - null
+              - null
+            selenoid:options:
+              enableVideo: true
+              timeZone: timeZone
+              env:
+              - env
+              - env
+              videoFrameRate: 2
+              labels:
+                key: labels
+              enableVNC: true
+              s3KeyPattern: s3KeyPattern
+              videoScreenSize: videoScreenSize
+              logName: logName
+              videoName: videoName
+              enableLog: true
+              name: name
+              sessionTimeout: sessionTimeout
+              screenResolution: screenResolution
+            browserVersion: browserVersion
+            acceptInsecureCerts: true
+            browserName: browserName
+            safari:automaticInspection: true
+            platformName: platformName
+            setWindowRect: true
+            ms:edgeOptions:
+              args:
+              - args
+              - args
+              extensions:
+              - extensions
+              - extensions
+              binary: binary
+          sessionId: sessionId
+      properties:
+        value:
+          $ref: '#/components/schemas/NewSessionResponse_value'
+      required:
+      - value
+      type: object
+    Timeouts:
+      example:
+        implicit: 5
+        pageLoad: 1
+        script: 6
+      properties:
+        script:
+          format: int64
+          nullable: true
+          type: integer
+        pageLoad:
+          format: int64
+          type: integer
+        implicit:
+          format: int64
+          type: integer
+      type: object
+    TimeoutsResponse:
+      example:
+        value:
+          implicit: 5
+          pageLoad: 1
+          script: 6
+      properties:
+        value:
+          $ref: '#/components/schemas/Timeouts'
+      required:
+      - value
+      type: object
+    UrlRequest:
+      example:
+        url: url
+      properties:
+        url:
+          type: string
+      required:
+      - url
+      type: object
+    EmptyRequest:
+      additionalProperties:
+        type: object
+      type: object
+    AnyValue: {}
+    ScriptRequest:
+      example:
+        args:
+        - null
+        - null
+        script: script
+      properties:
+        script:
+          type: string
+        args:
+          items:
+            $ref: '#/components/schemas/AnyValue'
+          type: array
+      type: object
+    FileUploadRequest:
+      example:
+        file: file
+      properties:
+        file:
+          type: string
+      type: object
+    FileUploadResponse:
+      example:
+        value: value
+      properties:
+        value:
+          type: string
+      required:
+      - value
+      type: object
+    AnyResponse:
+      example:
+        value: ""
+      properties:
+        value: {}
+      required:
+      - value
+      type: object
+    Cookie:
+      example:
+        path: path
+        domain: domain
+        sameSite: None
+        name: name
+        httpOnly: true
+        expiry: 0
+        secure: true
+        value: value
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+        path:
+          type: string
+        domain:
+          type: string
+        secure:
+          type: boolean
+        httpOnly:
+          type: boolean
+        expiry:
+          format: int64
+          type: integer
+        sameSite:
+          enum:
+          - None
+          - Lax
+          - Strict
+          type: string
+      required:
+      - domain
+      - httpOnly
+      - name
+      - path
+      - sameSite
+      - secure
+      - value
+      type: object
+    CookiesResponse:
+      example:
+        value:
+        - path: path
+          domain: domain
+          sameSite: None
+          name: name
+          httpOnly: true
+          expiry: 0
+          secure: true
+          value: value
+        - path: path
+          domain: domain
+          sameSite: None
+          name: name
+          httpOnly: true
+          expiry: 0
+          secure: true
+          value: value
+      properties:
+        value:
+          items:
+            $ref: '#/components/schemas/Cookie'
+          type: array
+      required:
+      - value
+      type: object
+    CookieRequest:
+      example:
+        cookie:
+          path: path
+          domain: domain
+          sameSite: None
+          name: name
+          httpOnly: true
+          expiry: 0
+          secure: true
+          value: value
+      properties:
+        cookie:
+          $ref: '#/components/schemas/Cookie'
+      required:
+      - cookie
+      type: object
+    CookieResponse:
+      example:
+        value:
+          path: path
+          domain: domain
+          sameSite: None
+          name: name
+          httpOnly: true
+          expiry: 0
+          secure: true
+          value: value
+      properties:
+        value:
+          $ref: '#/components/schemas/Cookie'
+      required:
+      - value
+      type: object
+    SwitchToWindowRequest:
+      example:
+        handle: handle
+      properties:
+        handle:
+          type: string
+      required:
+      - handle
+      type: object
+    SwitchToFrameRequest:
+      example:
+        id: null
+      properties:
+        id:
+          $ref: '#/components/schemas/FrameId'
+      type: object
+    FrameId:
+      nullable: true
+      oneOf:
+      - type: integer
+      - $ref: '#/components/schemas/WebElement'
+    WebElement:
+      properties:
+        element-6066-11e4-a52e-4f735466cecf:
+          type: string
+      required:
+      - element-6066-11e4-a52e-4f735466cecf
+      type: object
+    GetWindowHandlesResponse:
+      example:
+        value:
+        - value
+        - value
+      properties:
+        value:
+          items:
+            type: string
+          type: array
+      required:
+      - value
+      type: object
+    NewWindowRequest:
+      example:
+        type: tab
+      properties:
+        type:
+          enum:
+          - tab
+          - window
+          type: string
+      required:
+      - type
+      type: object
+    NewWindowResponse:
+      example:
+        value:
+          handle: handle
+          type: tab
+      properties:
+        value:
+          $ref: '#/components/schemas/NewWindowResponse_value'
+      required:
+      - value
+      type: object
+    Rect:
+      example:
+        x: 0.08008282
+        width: 0.14658129
+        "y": 0.6027456
+        height: 0.5962134
+      properties:
+        x:
+          format: float
+          minimum: 0
+          type: number
+        "y":
+          format: float
+          minimum: 0
+          type: number
+        width:
+          format: float
+          minimum: 0
+          type: number
+        height:
+          format: float
+          minimum: 0
+          type: number
+      required:
+      - height
+      - width
+      - x
+      - "y"
+      type: object
+    RectResponse:
+      example:
+        value:
+          x: 0.08008282
+          width: 0.14658129
+          "y": 0.6027456
+          height: 0.5962134
+      properties:
+        value:
+          $ref: '#/components/schemas/Rect'
+      required:
+      - value
+      type: object
+    LocatorStrategy:
+      description: Locator strategy
+      enum:
+      - css selector
+      - link text
+      - partial link text
+      - tag name
+      - xpath
+      type: string
+    FindElementRequest:
+      example:
+        using: null
+        value: value
+      properties:
+        using:
+          $ref: '#/components/schemas/LocatorStrategy'
+        value:
+          description: Selector value
+          type: string
+      required:
+      - using
+      - value
+      type: object
+    FindElementResponse:
+      example:
+        value:
+          element-6066-11e4-a52e-4f735466cecf: element-6066-11e4-a52e-4f735466cecf
+      properties:
+        value:
+          $ref: '#/components/schemas/FindElementResponse_value'
+      required:
+      - value
+      type: object
+    FindElementsResponse:
+      example:
+        value:
+        - element-6066-11e4-a52e-4f735466cecf: element-6066-11e4-a52e-4f735466cecf
+        - element-6066-11e4-a52e-4f735466cecf: element-6066-11e4-a52e-4f735466cecf
+      properties:
+        value:
+          description: A list of web element identifiers
+          items:
+            $ref: '#/components/schemas/FindElementResponse_value'
+          type: array
+      required:
+      - value
+      type: object
+    ElementSendKeysRequest:
+      example:
+        text: text
+      properties:
+        text:
+          description: Text to send to element
+          type: string
+      required:
+      - text
+      type: object
+    NullAction:
+      properties:
+        type:
+          default: pause
+          enum:
+          - pause
+          type: string
+        duration:
+          minimum: 0
+          type: integer
+      type: object
+    KeyAction:
+      properties:
+        type:
+          default: pause
+          enum:
+          - pause
+          - keyDown
+          - keyUp
+          type: string
+        value:
+          type: string
+        pressed:
+          type: boolean
+        duration:
+          type: integer
+      type: object
+    StringOrigin:
+      enum:
+      - viewport
+      - pointer
+      type: string
+    WebElementOrigin:
+      properties:
+        element-6066-11e4-a52e-4f735466cecf:
+          description: Web element identifier
+          type: string
+      type: object
+    ActionOrigin:
+      oneOf:
+      - $ref: '#/components/schemas/StringOrigin'
+      - $ref: '#/components/schemas/WebElementOrigin'
+    PointerAction:
+      properties:
+        type:
+          default: pause
+          enum:
+          - pause
+          - pointerDown
+          - pointerUp
+          - pointerMove
+          - pointerCancel
+          type: string
+        button:
+          description: "Possible values: `0` - left button, `1` - middle button, `2`\
+            \ - right button"
+          enum:
+          - 0
+          - 1
+          - 2
+          type: integer
+        pressed:
+          type: integer
+        x:
+          type: integer
+        "y":
+          type: integer
+        width:
+          minimum: 0
+          type: integer
+        height:
+          minimum: 0
+          type: integer
+        pressure:
+          maximum: 1
+          minimum: 0
+          type: integer
+        tangentialPressure:
+          maximum: 1
+          minimum: -1
+          type: integer
+        tiltX:
+          maximum: 90
+          minimum: -90
+          type: integer
+        tiltY:
+          maximum: 90
+          minimum: -90
+          type: integer
+        twist:
+          maximum: 359
+          minimum: 0
+          type: integer
+        altitudeAngle:
+          format: float
+          maximum: 1.5707
+          minimum: 0
+          type: number
+        asimuthAngle:
+          format: float
+          maximum: 6.2831
+          minimum: 0
+          type: number
+        origin:
+          $ref: '#/components/schemas/ActionOrigin'
+      type: object
+    WheelAction:
+      properties:
+        type:
+          default: pause
+          enum:
+          - pause
+          - scroll
+          type: string
+        x:
+          type: integer
+        "y":
+          type: integer
+        deltaX:
+          type: integer
+        deltaY:
+          type: integer
+        origin:
+          $ref: '#/components/schemas/ActionOrigin'
+      type: object
+    Action:
+      oneOf:
+      - $ref: '#/components/schemas/NullAction'
+      - $ref: '#/components/schemas/KeyAction'
+      - $ref: '#/components/schemas/PointerAction'
+      - $ref: '#/components/schemas/WheelAction'
+    ActionSequence:
+      example:
+        id: id
+        type: key
+        parameters:
+          pointerType: mouse
+        actions:
+        - null
+        - null
+      properties:
+        id:
+          type: string
+        type:
+          enum:
+          - key
+          - pointer
+          - wheel
+          - none
+          type: string
+        parameters:
+          $ref: '#/components/schemas/ActionSequence_parameters'
+        actions:
+          items:
+            $ref: '#/components/schemas/Action'
+          type: array
+      type: object
+    ActionsRequest:
+      example:
+        actions:
+        - id: id
+          type: key
+          parameters:
+            pointerType: mouse
+          actions:
+          - null
+          - null
+        - id: id
+          type: key
+          parameters:
+            pointerType: mouse
+          actions:
+          - null
+          - null
+      properties:
+        actions:
+          description: A list of actions to be performed
+          items:
+            $ref: '#/components/schemas/ActionSequence'
+          type: array
+      required:
+      - actions
+      type: object
+    SendAlertTextRequest:
+      example:
+        text: text
+      properties:
+        text:
+          type: string
+      required:
+      - text
+      type: object
+    PrintRequest:
+      example:
+        options:
+          pageRanges:
+          - pageRanges
+          - pageRanges
+          orientation: portrait
+          margin:
+            top: 0.5962134
+            left: 0.23021358
+            bottom: 0.5637377
+            right: 0.7061401
+          shrinkToFit: true
+          background: false
+          scale: 0.25215736
+          page:
+            width: 0.6027456
+            height: 0.14658129
+      properties:
+        options:
+          $ref: '#/components/schemas/PrintRequest_options'
+      required:
+      - options
+      type: object
+    ClipboardData:
+      example:
+        media: ""
+        value: value
+      properties:
+        value:
+          type: string
+        media:
+          enum:
+          - ""
+          - image/png
+          type: string
+      required:
+      - value
+      type: object
+    StatusResponse_value:
+      example:
+        ready: true
+        message: message
+      properties:
+        ready:
+          type: boolean
+        message:
+          type: string
+      required:
+      - message
+      - ready
+      type: object
+    ErrorResponse_value:
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorCode'
+        message:
+          type: string
+        stacktrace:
+          type: string
+        data:
+          additionalProperties:
+            type: object
+          type: object
+      required:
+      - error
+      - message
+      - stacktrace
+      type: object
+    FirefoxOptions_log:
+      example:
+        level: trace
+      properties:
+        level:
+          enum:
+          - trace
+          - debug
+          - config
+          - info
+          - warn
+          - error
+          - fatal
+          type: string
+      required:
+      - level
+      type: object
+    MobileEmulation_deviceMetrics:
+      example:
+        pixelRatio: 0.8061401
+        width: 0
+        touch: true
+        height: 0
+      properties:
+        width:
+          minimum: 0
+          type: integer
+        height:
+          minimum: 0
+          type: integer
+        pixelRatio:
+          format: float
+          minimum: 0.1
+          type: number
+        touch:
+          default: true
+          type: boolean
+      required:
+      - height
+      - pixelRatio
+      - touch
+      - width
+      type: object
+    NewSessionRequest_capabilities:
+      example:
+        firstMatch:
+        - timeouts:
+            implicit: 5
+            pageLoad: 1
+            script: 6
+          pageLoadStrategy: none
+          unhandledPromptBehavior: dismiss
+          strictFileInteractability: true
+          moz:firefoxOptions:
+            args:
+            - args
+            - args
+            androidDeviceSerial: androidDeviceSerial
+            log:
+              level: trace
+            binary: binary
+            profile: profile
+            androidPackage: androidPackage
+            androidIntentArguments:
+            - androidIntentArguments
+            - androidIntentArguments
+            androidActivity: androidActivity
+            env:
+              key: env
+            prefs:
+              key: null
+          proxy:
+            proxyAutoconfigUrl: proxyAutoconfigUrl
+            httpProxy: httpProxy
+            socksVersion: 20
+            proxyType: pac
+            noProxy:
+            - noProxy
+            - noProxy
+            ftpProxy: ftpProxy
+            socksProxy: socksProxy
+            sslProxy: sslProxy
+          moon:options:
+            hosts:
+            - hosts
+            - hosts
+            additionalFonts: true
+            pattern: pattern
+            enableVideo: true
+            env:
+            - env
+            - env
+            videoFrameRate: 3
+            labels:
+              key: labels
+            videoScreenSize: videoScreenSize
+            nameservers:
+            - nameservers
+            - nameservers
+            logLevel: null
+            videoName: videoName
+            context: context
+            mobileDevice:
+              orientation: portrait
+              deviceName: deviceName
+            name: name
+            sessionTimeout: sessionTimeout
+            screenResolution: screenResolution
+          operaOptions:
+            args:
+            - args
+            - args
+            extensions:
+            - extensions
+            - extensions
+            binary: binary
+          goog:loggingPrefs:
+            server: null
+            performance: null
+            driver: null
+            browser: null
+            client: null
+            profiler: null
+          safari:automaticProfiling: true
+          goog:chromeOptions:
+            args:
+            - args
+            - args
+            mobileEmulation:
+              deviceMetrics:
+                pixelRatio: 0.8061401
+                width: 0
+                touch: true
+                height: 0
+              userAgent: userAgent
+              deviceName: deviceName
+            windowTypes:
+            - windowTypes
+            - windowTypes
+            extensions:
+            - extensions
+            - extensions
+            excludeSwitches:
+            - excludeSwitches
+            - excludeSwitches
+            perfLoggingPrefs:
+              enableNetwork: true
+              enablePage: true
+              bufferUsageReportingInterval: 9
+              traceCategories: traceCategories
+            debuggerAddress: debuggerAddress
+            binary: binary
+            detach: true
+            localState:
+              key: null
+            minidumpPath: minidumpPath
+            prefs:
+            - null
+            - null
+          selenoid:options:
+            enableVideo: true
+            timeZone: timeZone
+            env:
+            - env
+            - env
+            videoFrameRate: 2
+            labels:
+              key: labels
+            enableVNC: true
+            s3KeyPattern: s3KeyPattern
+            videoScreenSize: videoScreenSize
+            logName: logName
+            videoName: videoName
+            enableLog: true
+            name: name
+            sessionTimeout: sessionTimeout
+            screenResolution: screenResolution
+          browserVersion: browserVersion
+          acceptInsecureCerts: true
+          browserName: browserName
+          safari:automaticInspection: true
+          platformName: platformName
+          setWindowRect: true
+          ms:edgeOptions:
+            args:
+            - args
+            - args
+            extensions:
+            - extensions
+            - extensions
+            binary: binary
+        - timeouts:
+            implicit: 5
+            pageLoad: 1
+            script: 6
+          pageLoadStrategy: none
+          unhandledPromptBehavior: dismiss
+          strictFileInteractability: true
+          moz:firefoxOptions:
+            args:
+            - args
+            - args
+            androidDeviceSerial: androidDeviceSerial
+            log:
+              level: trace
+            binary: binary
+            profile: profile
+            androidPackage: androidPackage
+            androidIntentArguments:
+            - androidIntentArguments
+            - androidIntentArguments
+            androidActivity: androidActivity
+            env:
+              key: env
+            prefs:
+              key: null
+          proxy:
+            proxyAutoconfigUrl: proxyAutoconfigUrl
+            httpProxy: httpProxy
+            socksVersion: 20
+            proxyType: pac
+            noProxy:
+            - noProxy
+            - noProxy
+            ftpProxy: ftpProxy
+            socksProxy: socksProxy
+            sslProxy: sslProxy
+          moon:options:
+            hosts:
+            - hosts
+            - hosts
+            additionalFonts: true
+            pattern: pattern
+            enableVideo: true
+            env:
+            - env
+            - env
+            videoFrameRate: 3
+            labels:
+              key: labels
+            videoScreenSize: videoScreenSize
+            nameservers:
+            - nameservers
+            - nameservers
+            logLevel: null
+            videoName: videoName
+            context: context
+            mobileDevice:
+              orientation: portrait
+              deviceName: deviceName
+            name: name
+            sessionTimeout: sessionTimeout
+            screenResolution: screenResolution
+          operaOptions:
+            args:
+            - args
+            - args
+            extensions:
+            - extensions
+            - extensions
+            binary: binary
+          goog:loggingPrefs:
+            server: null
+            performance: null
+            driver: null
+            browser: null
+            client: null
+            profiler: null
+          safari:automaticProfiling: true
+          goog:chromeOptions:
+            args:
+            - args
+            - args
+            mobileEmulation:
+              deviceMetrics:
+                pixelRatio: 0.8061401
+                width: 0
+                touch: true
+                height: 0
+              userAgent: userAgent
+              deviceName: deviceName
+            windowTypes:
+            - windowTypes
+            - windowTypes
+            extensions:
+            - extensions
+            - extensions
+            excludeSwitches:
+            - excludeSwitches
+            - excludeSwitches
+            perfLoggingPrefs:
+              enableNetwork: true
+              enablePage: true
+              bufferUsageReportingInterval: 9
+              traceCategories: traceCategories
+            debuggerAddress: debuggerAddress
+            binary: binary
+            detach: true
+            localState:
+              key: null
+            minidumpPath: minidumpPath
+            prefs:
+            - null
+            - null
+          selenoid:options:
+            enableVideo: true
+            timeZone: timeZone
+            env:
+            - env
+            - env
+            videoFrameRate: 2
+            labels:
+              key: labels
+            enableVNC: true
+            s3KeyPattern: s3KeyPattern
+            videoScreenSize: videoScreenSize
+            logName: logName
+            videoName: videoName
+            enableLog: true
+            name: name
+            sessionTimeout: sessionTimeout
+            screenResolution: screenResolution
+          browserVersion: browserVersion
+          acceptInsecureCerts: true
+          browserName: browserName
+          safari:automaticInspection: true
+          platformName: platformName
+          setWindowRect: true
+          ms:edgeOptions:
+            args:
+            - args
+            - args
+            extensions:
+            - extensions
+            - extensions
+            binary: binary
+        alwaysMatch:
+          timeouts:
+            implicit: 5
+            pageLoad: 1
+            script: 6
+          pageLoadStrategy: none
+          unhandledPromptBehavior: dismiss
+          strictFileInteractability: true
+          moz:firefoxOptions:
+            args:
+            - args
+            - args
+            androidDeviceSerial: androidDeviceSerial
+            log:
+              level: trace
+            binary: binary
+            profile: profile
+            androidPackage: androidPackage
+            androidIntentArguments:
+            - androidIntentArguments
+            - androidIntentArguments
+            androidActivity: androidActivity
+            env:
+              key: env
+            prefs:
+              key: null
+          proxy:
+            proxyAutoconfigUrl: proxyAutoconfigUrl
+            httpProxy: httpProxy
+            socksVersion: 20
+            proxyType: pac
+            noProxy:
+            - noProxy
+            - noProxy
+            ftpProxy: ftpProxy
+            socksProxy: socksProxy
+            sslProxy: sslProxy
+          moon:options:
+            hosts:
+            - hosts
+            - hosts
+            additionalFonts: true
+            pattern: pattern
+            enableVideo: true
+            env:
+            - env
+            - env
+            videoFrameRate: 3
+            labels:
+              key: labels
+            videoScreenSize: videoScreenSize
+            nameservers:
+            - nameservers
+            - nameservers
+            logLevel: null
+            videoName: videoName
+            context: context
+            mobileDevice:
+              orientation: portrait
+              deviceName: deviceName
+            name: name
+            sessionTimeout: sessionTimeout
+            screenResolution: screenResolution
+          operaOptions:
+            args:
+            - args
+            - args
+            extensions:
+            - extensions
+            - extensions
+            binary: binary
+          goog:loggingPrefs:
+            server: null
+            performance: null
+            driver: null
+            browser: null
+            client: null
+            profiler: null
+          safari:automaticProfiling: true
+          goog:chromeOptions:
+            args:
+            - args
+            - args
+            mobileEmulation:
+              deviceMetrics:
+                pixelRatio: 0.8061401
+                width: 0
+                touch: true
+                height: 0
+              userAgent: userAgent
+              deviceName: deviceName
+            windowTypes:
+            - windowTypes
+            - windowTypes
+            extensions:
+            - extensions
+            - extensions
+            excludeSwitches:
+            - excludeSwitches
+            - excludeSwitches
+            perfLoggingPrefs:
+              enableNetwork: true
+              enablePage: true
+              bufferUsageReportingInterval: 9
+              traceCategories: traceCategories
+            debuggerAddress: debuggerAddress
+            binary: binary
+            detach: true
+            localState:
+              key: null
+            minidumpPath: minidumpPath
+            prefs:
+            - null
+            - null
+          selenoid:options:
+            enableVideo: true
+            timeZone: timeZone
+            env:
+            - env
+            - env
+            videoFrameRate: 2
+            labels:
+              key: labels
+            enableVNC: true
+            s3KeyPattern: s3KeyPattern
+            videoScreenSize: videoScreenSize
+            logName: logName
+            videoName: videoName
+            enableLog: true
+            name: name
+            sessionTimeout: sessionTimeout
+            screenResolution: screenResolution
+          browserVersion: browserVersion
+          acceptInsecureCerts: true
+          browserName: browserName
+          safari:automaticInspection: true
+          platformName: platformName
+          setWindowRect: true
+          ms:edgeOptions:
+            args:
+            - args
+            - args
+            extensions:
+            - extensions
+            - extensions
+            binary: binary
+      properties:
+        alwaysMatch:
+          $ref: '#/components/schemas/Capabilities'
+        firstMatch:
+          items:
+            $ref: '#/components/schemas/Capabilities'
+          type: array
+      type: object
+    NewSessionResponse_value:
+      example:
+        capabilities:
+          timeouts:
+            implicit: 5
+            pageLoad: 1
+            script: 6
+          pageLoadStrategy: none
+          unhandledPromptBehavior: dismiss
+          strictFileInteractability: true
+          moz:firefoxOptions:
+            args:
+            - args
+            - args
+            androidDeviceSerial: androidDeviceSerial
+            log:
+              level: trace
+            binary: binary
+            profile: profile
+            androidPackage: androidPackage
+            androidIntentArguments:
+            - androidIntentArguments
+            - androidIntentArguments
+            androidActivity: androidActivity
+            env:
+              key: env
+            prefs:
+              key: null
+          proxy:
+            proxyAutoconfigUrl: proxyAutoconfigUrl
+            httpProxy: httpProxy
+            socksVersion: 20
+            proxyType: pac
+            noProxy:
+            - noProxy
+            - noProxy
+            ftpProxy: ftpProxy
+            socksProxy: socksProxy
+            sslProxy: sslProxy
+          moon:options:
+            hosts:
+            - hosts
+            - hosts
+            additionalFonts: true
+            pattern: pattern
+            enableVideo: true
+            env:
+            - env
+            - env
+            videoFrameRate: 3
+            labels:
+              key: labels
+            videoScreenSize: videoScreenSize
+            nameservers:
+            - nameservers
+            - nameservers
+            logLevel: null
+            videoName: videoName
+            context: context
+            mobileDevice:
+              orientation: portrait
+              deviceName: deviceName
+            name: name
+            sessionTimeout: sessionTimeout
+            screenResolution: screenResolution
+          operaOptions:
+            args:
+            - args
+            - args
+            extensions:
+            - extensions
+            - extensions
+            binary: binary
+          goog:loggingPrefs:
+            server: null
+            performance: null
+            driver: null
+            browser: null
+            client: null
+            profiler: null
+          safari:automaticProfiling: true
+          goog:chromeOptions:
+            args:
+            - args
+            - args
+            mobileEmulation:
+              deviceMetrics:
+                pixelRatio: 0.8061401
+                width: 0
+                touch: true
+                height: 0
+              userAgent: userAgent
+              deviceName: deviceName
+            windowTypes:
+            - windowTypes
+            - windowTypes
+            extensions:
+            - extensions
+            - extensions
+            excludeSwitches:
+            - excludeSwitches
+            - excludeSwitches
+            perfLoggingPrefs:
+              enableNetwork: true
+              enablePage: true
+              bufferUsageReportingInterval: 9
+              traceCategories: traceCategories
+            debuggerAddress: debuggerAddress
+            binary: binary
+            detach: true
+            localState:
+              key: null
+            minidumpPath: minidumpPath
+            prefs:
+            - null
+            - null
+          selenoid:options:
+            enableVideo: true
+            timeZone: timeZone
+            env:
+            - env
+            - env
+            videoFrameRate: 2
+            labels:
+              key: labels
+            enableVNC: true
+            s3KeyPattern: s3KeyPattern
+            videoScreenSize: videoScreenSize
+            logName: logName
+            videoName: videoName
+            enableLog: true
+            name: name
+            sessionTimeout: sessionTimeout
+            screenResolution: screenResolution
+          browserVersion: browserVersion
+          acceptInsecureCerts: true
+          browserName: browserName
+          safari:automaticInspection: true
+          platformName: platformName
+          setWindowRect: true
+          ms:edgeOptions:
+            args:
+            - args
+            - args
+            extensions:
+            - extensions
+            - extensions
+            binary: binary
+        sessionId: sessionId
+      properties:
+        sessionId:
+          type: string
+        capabilities:
+          $ref: '#/components/schemas/Capabilities'
+      required:
+      - capabilities
+      - sessionId
+      type: object
+    NewWindowResponse_value:
+      example:
+        handle: handle
+        type: tab
+      properties:
+        handle:
+          type: string
+        type:
+          enum:
+          - tab
+          - window
+          type: string
+      required:
+      - handle
+      - type
+      type: object
+    FindElementResponse_value:
+      example:
+        element-6066-11e4-a52e-4f735466cecf: element-6066-11e4-a52e-4f735466cecf
+      properties:
+        element-6066-11e4-a52e-4f735466cecf:
+          description: Web element identifier
+          type: string
+      type: object
+    ActionSequence_parameters:
+      example:
+        pointerType: mouse
+      properties:
+        pointerType:
+          default: mouse
+          enum:
+          - mouse
+          - pen
+          - touch
+          type: string
+      type: object
+    PrintRequest_options_page:
+      example:
+        width: 0.6027456
+        height: 0.14658129
+      properties:
+        width:
+          default: 21.59
+          format: float
+          minimum: 0
+          type: number
+        height:
+          default: 27.94
+          format: float
+          minimum: 0
+          type: number
+      type: object
+    PrintRequest_options_margin:
+      example:
+        top: 0.5962134
+        left: 0.23021358
+        bottom: 0.5637377
+        right: 0.7061401
+      properties:
+        top:
+          default: 1
+          format: float
+          minimum: 0
+          type: number
+        bottom:
+          default: 1
+          format: float
+          minimum: 0
+          type: number
+        left:
+          default: 1
+          format: float
+          minimum: 0
+          type: number
+        right:
+          default: 1
+          format: float
+          minimum: 0
+          type: number
+      type: object
+    PrintRequest_options:
+      example:
+        pageRanges:
+        - pageRanges
+        - pageRanges
+        orientation: portrait
+        margin:
+          top: 0.5962134
+          left: 0.23021358
+          bottom: 0.5637377
+          right: 0.7061401
+        shrinkToFit: true
+        background: false
+        scale: 0.25215736
+        page:
+          width: 0.6027456
+          height: 0.14658129
+      properties:
+        orientation:
+          default: portrait
+          enum:
+          - portrait
+          - landscape
+          type: string
+        scale:
+          default: 1.0
+          format: float
+          maximum: 2.0
+          minimum: 0.1
+          type: number
+        background:
+          default: false
+          description: print page background
+          type: boolean
+        page:
+          $ref: '#/components/schemas/PrintRequest_options_page'
+        margin:
+          $ref: '#/components/schemas/PrintRequest_options_margin'
+        shrinkToFit:
+          default: true
+          type: boolean
+        pageRanges:
+          items:
+            type: string
+          type: array
+      required:
+      - background
+      - margin
+      - orientation
+      - page
+      - pageRanges
+      - scale
+      - shrinkToFit
+      type: object
+  securitySchemes:
+    BasicAuth:
+      scheme: basic
+      type: http

@@ -1,0 +1,35 @@
+type Nilable{{{classname}}} struct {
+	value {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}{{{classname}}}
+	isSet bool
+}
+
+func (v Nilable{{classname}}) Get() {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}{{classname}} {
+	return v.value
+}
+
+func (v *Nilable{{classname}}) Set(val {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}{{classname}}) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v Nilable{{classname}}) IsSet() bool {
+	return v.isSet
+}
+
+func (v *Nilable{{classname}}) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNilable{{classname}}(val {{^isArray}}{{^isFreeFormObject}}*{{/isFreeFormObject}}{{/isArray}}{{classname}}) *Nilable{{classname}} {
+	return &Nilable{{classname}}{value: val, isSet: true}
+}
+
+func (v Nilable{{{classname}}}) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *Nilable{{{classname}}}) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
