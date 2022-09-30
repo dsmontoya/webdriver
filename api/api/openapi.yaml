@@ -4324,7 +4324,8 @@ components:
       additionalProperties:
         type: object
       type: object
-    AnyValue: {}
+    AnyValue:
+      type: string
     ScriptRequest:
       example:
         args:
@@ -4357,9 +4358,10 @@ components:
       type: object
     AnyResponse:
       example:
-        value: ""
+        value: value
       properties:
-        value: {}
+        value:
+          type: string
       required:
       - value
       type: object

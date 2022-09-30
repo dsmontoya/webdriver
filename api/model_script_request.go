@@ -18,7 +18,7 @@ import (
 // ScriptRequest struct for ScriptRequest
 type ScriptRequest struct {
 	Script *string `json:"script,omitempty"`
-	Args []interface{} `json:"args,omitempty"`
+	Args []string `json:"args,omitempty"`
 }
 
 // NewScriptRequest instantiates a new ScriptRequest object
@@ -71,9 +71,9 @@ func (o *ScriptRequest) SetScript(v string) {
 }
 
 // GetArgs returns the Args field value if set, zero value otherwise.
-func (o *ScriptRequest) GetArgs() []interface{} {
+func (o *ScriptRequest) GetArgs() []string {
 	if o == nil || o.Args == nil {
-		var ret []interface{}
+		var ret []string
 		return ret
 	}
 	return o.Args
@@ -81,7 +81,7 @@ func (o *ScriptRequest) GetArgs() []interface{} {
 
 // GetArgsOk returns a tuple with the Args field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *ScriptRequest) GetArgsOk() ([]interface{}, bool) {
+func (o *ScriptRequest) GetArgsOk() ([]string, bool) {
 	if o == nil || o.Args == nil {
 		return nil, false
 	}
@@ -97,8 +97,8 @@ func (o *ScriptRequest) HasArgs() bool {
 	return false
 }
 
-// SetArgs gets a reference to the given []interface{} and assigns it to the Args field.
-func (o *ScriptRequest) SetArgs(v []interface{}) {
+// SetArgs gets a reference to the given []string and assigns it to the Args field.
+func (o *ScriptRequest) SetArgs(v []string) {
 	o.Args = v
 }
 

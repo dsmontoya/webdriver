@@ -4,13 +4,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**Value** | **interface{}** |  | 
+**Value** | **string** |  | 
 
 ## Methods
 
 ### NewAnyResponse
 
-`func NewAnyResponse(value interface{}, ) *AnyResponse`
+`func NewAnyResponse(value string, ) *AnyResponse`
 
 NewAnyResponse instantiates a new AnyResponse object
 This constructor will assign default values to properties that have it defined,
@@ -27,34 +27,24 @@ but it doesn't guarantee that properties required by API are set
 
 ### GetValue
 
-`func (o *AnyResponse) GetValue() interface{}`
+`func (o *AnyResponse) GetValue() string`
 
 GetValue returns the Value field if non-nil, zero value otherwise.
 
 ### GetValueOk
 
-`func (o *AnyResponse) GetValueOk() (*interface{}, bool)`
+`func (o *AnyResponse) GetValueOk() (*string, bool)`
 
 GetValueOk returns a tuple with the Value field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetValue
 
-`func (o *AnyResponse) SetValue(v interface{})`
+`func (o *AnyResponse) SetValue(v string)`
 
 SetValue sets Value field to given value.
 
 
-### SetValueNil
-
-`func (o *AnyResponse) SetValueNil(b bool)`
-
- SetValueNil sets the value for Value to be an explicit nil
-
-### UnsetValue
-`func (o *AnyResponse) UnsetValue()`
-
-UnsetValue ensures that no value is present for Value, not even an explicit nil
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

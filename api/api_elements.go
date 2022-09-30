@@ -17,7 +17,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"fmt"
 	"strings"
 )
 
@@ -386,7 +385,6 @@ func (a *ElementsApiService) ElementClearExecute(r ElementsApiElementClearReques
 	}
 
 	localVarBody, err := ioutil.ReadAll(localVarHTTPResponse.Body)
-	fmt.Println("response body",string(localVarBody))
 	localVarHTTPResponse.Body.Close()
 	localVarHTTPResponse.Body = ioutil.NopCloser(bytes.NewBuffer(localVarBody))
 	if err != nil {

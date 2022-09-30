@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **Script** | Pointer to **string** |  | [optional] 
-**Args** | Pointer to **[]interface{}** |  | [optional] 
+**Args** | Pointer to **[]string** |  | [optional] 
 
 ## Methods
 
@@ -53,20 +53,20 @@ HasScript returns a boolean if a field has been set.
 
 ### GetArgs
 
-`func (o *ScriptRequest) GetArgs() []interface{}`
+`func (o *ScriptRequest) GetArgs() []string`
 
 GetArgs returns the Args field if non-nil, zero value otherwise.
 
 ### GetArgsOk
 
-`func (o *ScriptRequest) GetArgsOk() (*[]interface{}, bool)`
+`func (o *ScriptRequest) GetArgsOk() (*[]string, bool)`
 
 GetArgsOk returns a tuple with the Args field if it's non-nil, zero value otherwise
 and a boolean to check if the value has been set.
 
 ### SetArgs
 
-`func (o *ScriptRequest) SetArgs(v []interface{})`
+`func (o *ScriptRequest) SetArgs(v []string)`
 
 SetArgs sets Args field to given value.
 

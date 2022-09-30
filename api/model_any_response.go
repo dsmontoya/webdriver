@@ -17,14 +17,14 @@ import (
 
 // AnyResponse struct for AnyResponse
 type AnyResponse struct {
-	Value interface{} `json:"value"`
+	Value string `json:"value"`
 }
 
 // NewAnyResponse instantiates a new AnyResponse object
 // This constructor will assign default values to properties that have it defined,
 // and makes sure properties required by API are set, but the set of arguments
 // will change when the set of required properties is changed
-func NewAnyResponse(value interface{}) *AnyResponse {
+func NewAnyResponse(value string) *AnyResponse {
 	this := AnyResponse{}
 	this.Value = value
 	return &this
@@ -39,10 +39,9 @@ func NewAnyResponseWithDefaults() *AnyResponse {
 }
 
 // GetValue returns the Value field value
-// If the value is explicit nil, the zero value for interface{} will be returned
-func (o *AnyResponse) GetValue() interface{} {
+func (o *AnyResponse) GetValue() string {
 	if o == nil {
-		var ret interface{}
+		var ret string
 		return ret
 	}
 
@@ -51,22 +50,21 @@ func (o *AnyResponse) GetValue() interface{} {
 
 // GetValueOk returns a tuple with the Value field value
 // and a boolean to check if the value has been set.
-// NOTE: If the value is an explicit nil, `nil, true` will be returned
-func (o *AnyResponse) GetValueOk() (*interface{}, bool) {
-	if o == nil || o.Value == nil {
+func (o *AnyResponse) GetValueOk() (*string, bool) {
+	if o == nil {
 		return nil, false
 	}
 	return &o.Value, true
 }
 
 // SetValue sets field value
-func (o *AnyResponse) SetValue(v interface{}) {
+func (o *AnyResponse) SetValue(v string) {
 	o.Value = v
 }
 
 func (o AnyResponse) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Value != nil {
+	if true {
 		toSerialize["value"] = o.Value
 	}
 	return json.Marshal(toSerialize)
